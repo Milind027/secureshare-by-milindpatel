@@ -60,13 +60,13 @@ export default function HomePage() {
           <Button size="lg" className="text-base px-8" asChild>
             <Link to="/send">
               <FileText className="w-5 h-5 mr-2" />
-              Share Something
+              Send
             </Link>
           </Button>
           <Button size="lg" variant="outline" className="text-base px-8" asChild>
-            <Link to="/receiver-setup">
-              <Key className="w-5 h-5 mr-2" />
-              Set Up Keys
+            <Link to="/receive">
+              <Download className="w-5 h-5 mr-2" />
+              Receive
             </Link>
           </Button>
         </div>
