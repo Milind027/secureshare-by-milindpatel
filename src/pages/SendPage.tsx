@@ -151,7 +151,7 @@ export default function SendPage() {
       }
 
       // Serialize payload to bytes
-      let payloadBytes = new TextEncoder().encode(JSON.stringify(payload));
+      let payloadBytes: Uint8Array = new Uint8Array(new TextEncoder().encode(JSON.stringify(payload)));
 
       // Steganography embedding
       if (stegoEnabled && stegoCoverFile) {
