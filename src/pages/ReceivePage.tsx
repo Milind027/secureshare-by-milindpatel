@@ -186,7 +186,7 @@ export default function ReceivePage() {
   };
 
   const downloadFile = (data: Uint8Array, filename: string, mimeType: string) => {
-    const blob = new Blob([data], { type: mimeType });
+    const blob = new Blob([data as BlobPart], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -385,7 +385,7 @@ export default function ReceivePage() {
 
     let previewUrl: string | null = null;
     if (isImage || isAudio || isVideo) {
-      previewUrl = URL.createObjectURL(new Blob([content.data], { type: content.mimeType }));
+      previewUrl = URL.createObjectURL(new Blob([content.data as BlobPart], { type: content.mimeType }));
     }
 
     return (
