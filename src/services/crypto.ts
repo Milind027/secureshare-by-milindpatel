@@ -4,7 +4,7 @@
 
 /** Convert Uint8Array to a proper ArrayBuffer (fixes TS strict typing) */
 function toBuffer(arr: Uint8Array): ArrayBuffer {
-  return arr.buffer.slice(arr.byteOffset, arr.byteOffset + arr.byteLength);
+  return arr.buffer.slice(arr.byteOffset, arr.byteOffset + arr.byteLength) as ArrayBuffer;
 }
 
 // ---- Base64URL helpers ----
@@ -55,7 +55,7 @@ export async function decryptData(
   iv: Uint8Array,
   ciphertext: Uint8Array
 ): Promise<Uint8Array> {
-  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, toBuffer(ciphertext));
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: toBuffer(iv) as ArrayBuffer }, key, toBuffer(ciphertext));
   return new Uint8Array(plaintext);
 }
 
