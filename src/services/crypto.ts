@@ -31,7 +31,7 @@ export async function exportAesKey(key: CryptoKey): Promise<Uint8Array> {
 }
 
 export async function importAesKey(raw: Uint8Array): Promise<CryptoKey> {
-  return crypto.subtle.importKey('raw', raw, 'AES-GCM', true, ['encrypt', 'decrypt']);
+  return crypto.subtle.importKey('raw', raw.buffer as ArrayBuffer, 'AES-GCM', true, ['encrypt', 'decrypt']);
 }
 
 export async function encryptData(
@@ -40,7 +40,7 @@ export async function encryptData(
 ): Promise<{ iv: Uint8Array; ciphertext: Uint8Array }> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ciphertext = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data)
+    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data as ArrayBuffer)
   );
   return { iv, ciphertext };
 }
@@ -50,7 +50,7 @@ export async function decryptData(
   iv: Uint8Array,
   ciphertext: Uint8Array
 ): Promise<Uint8Array> {
-  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext as ArrayBuffer);
   return new Uint8Array(plaintext);
 }
 
@@ -79,7 +79,7 @@ export async function deriveKeyFromPassword(
 ): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
-    'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+    'raw', enc.encode(password) as ArrayBuffer, 'PBKDF2', false, ['deriveKey']
   );
   return crypto.subtle.deriveKey(
     { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
@@ -154,7 +154,7 @@ export async function exportPublicKeyBase64Url(key: CryptoKey): Promise<string> 
 
 export async function importPublicKeyBase64Url(str: string): Promise<CryptoKey> {
   const spki = decodeBase64Url(str);
-  return crypto.subtle.importKey('spki', spki, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']);
+  return crypto.subtle.importKey('spki', spki.buffer as ArrayBuffer, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']);
 }
 
 export async function encryptHybrid(
@@ -165,7 +165,7 @@ export async function encryptHybrid(
   const { iv, ciphertext } = await encryptData(aesKey, data);
   const rawAesKey = await exportAesKey(aesKey);
   const encryptedAesKey = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, receiverPublicKey, rawAesKey)
+    await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, receiverPublicKey, rawAesKey as ArrayBuffer)
   );
   return { encryptedAesKey, iv, ciphertext };
 }
@@ -177,7 +177,7 @@ export async function decryptHybrid(
   ciphertext: Uint8Array
 ): Promise<Uint8Array> {
   const rawAesKey = new Uint8Array(
-    await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, receiverPrivateKey, encryptedAesKey)
+    await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, receiverPrivateKey, encryptedAesKey as ArrayBuffer)
   );
   const aesKey = await importAesKey(rawAesKey);
   return decryptData(aesKey, iv, ciphertext);
