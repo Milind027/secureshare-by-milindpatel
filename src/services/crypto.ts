@@ -2,6 +2,11 @@
 // SecureShare Crypto Service — Web Crypto API only, no deps
 // ============================================================
 
+/** Convert Uint8Array to a proper ArrayBuffer (fixes TS strict typing) */
+function toBuffer(arr: Uint8Array): ArrayBuffer {
+  return arr.buffer.slice(arr.byteOffset, arr.byteOffset + arr.byteLength);
+}
+
 // ---- Base64URL helpers ----
 
 export function encodeBase64Url(buf: Uint8Array): string {
@@ -31,7 +36,7 @@ export async function exportAesKey(key: CryptoKey): Promise<Uint8Array> {
 }
 
 export async function importAesKey(raw: Uint8Array): Promise<CryptoKey> {
-  return crypto.subtle.importKey('raw', raw.buffer as ArrayBuffer, 'AES-GCM', true, ['encrypt', 'decrypt']);
+  return crypto.subtle.importKey('raw', toBuffer(raw), 'AES-GCM', true, ['encrypt', 'decrypt']);
 }
 
 export async function encryptData(
@@ -40,7 +45,7 @@ export async function encryptData(
 ): Promise<{ iv: Uint8Array; ciphertext: Uint8Array }> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ciphertext = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data as ArrayBuffer)
+    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, toBuffer(data))
   );
   return { iv, ciphertext };
 }
@@ -50,7 +55,7 @@ export async function decryptData(
   iv: Uint8Array,
   ciphertext: Uint8Array
 ): Promise<Uint8Array> {
-  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext as ArrayBuffer);
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, toBuffer(ciphertext));
   return new Uint8Array(plaintext);
 }
 
@@ -79,10 +84,10 @@ export async function deriveKeyFromPassword(
 ): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
-    'raw', enc.encode(password) as ArrayBuffer, 'PBKDF2', false, ['deriveKey']
+    'raw', toBuffer(enc.encode(password)), 'PBKDF2', false, ['deriveKey']
   );
   return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: toBuffer(salt), iterations: 100_000, hash: 'SHA-256' },
     keyMaterial,
     { name: 'AES-GCM', length: 256 },
     false,
@@ -154,7 +159,7 @@ export async function exportPublicKeyBase64Url(key: CryptoKey): Promise<string> 
 
 export async function importPublicKeyBase64Url(str: string): Promise<CryptoKey> {
   const spki = decodeBase64Url(str);
-  return crypto.subtle.importKey('spki', spki.buffer as ArrayBuffer, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']);
+  return crypto.subtle.importKey('spki', toBuffer(spki), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']);
 }
 
 export async function encryptHybrid(
@@ -165,7 +170,7 @@ export async function encryptHybrid(
   const { iv, ciphertext } = await encryptData(aesKey, data);
   const rawAesKey = await exportAesKey(aesKey);
   const encryptedAesKey = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, receiverPublicKey, rawAesKey as ArrayBuffer)
+    await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, receiverPublicKey, toBuffer(rawAesKey))
   );
   return { encryptedAesKey, iv, ciphertext };
 }
@@ -177,7 +182,7 @@ export async function decryptHybrid(
   ciphertext: Uint8Array
 ): Promise<Uint8Array> {
   const rawAesKey = new Uint8Array(
-    await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, receiverPrivateKey, encryptedAesKey as ArrayBuffer)
+    await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, receiverPrivateKey, toBuffer(encryptedAesKey))
   );
   const aesKey = await importAesKey(rawAesKey);
   return decryptData(aesKey, iv, ciphertext);
