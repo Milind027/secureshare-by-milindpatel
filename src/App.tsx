@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import HomePage from "@/pages/Index";
 import SendPage from "@/pages/SendPage";
 import ReceivePage from "@/pages/ReceivePage";
+import ReceiveHubPage from "@/pages/ReceiveHubPage";
 import ReceiverSetupPage from "@/pages/ReceiverSetupPage";
 import NotFound from "@/pages/NotFound";
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/send" element={<SendPage />} />
+            <Route path="/receive" element={<ReceiveHubPage />} />
             <Route path="/download/:rid" element={<ReceivePage />} />
             <Route path="/receiver-setup" element={<ReceiverSetupPage />} />
             <Route path="*" element={<NotFound />} />

@@ -19,7 +19,10 @@ export default function Layout() {
 
           <nav className="flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/send">Share</Link>
+              <Link to="/send">Send</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/receive">Receive</Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/receiver-setup">Keys</Link>
