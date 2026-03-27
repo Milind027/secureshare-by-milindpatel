@@ -9,7 +9,7 @@ export async function checkPngCapacity(
   coverImageBytes: Uint8Array,
   payloadBytes: number
 ): Promise<{ fits: boolean; coverPixels: number; needed: number }> {
-  const bitmap = await createImageBitmap(new Blob([coverImageBytes]));
+  const bitmap = await createImageBitmap(new Blob([coverImageBytes as BlobPart]));
   const coverPixels = bitmap.width * bitmap.height;
   const needed = (payloadBytes * 8) + 32; // 32 bits for length header
   return { fits: needed <= coverPixels, coverPixels, needed };
@@ -23,7 +23,7 @@ export async function embedInPng(
   coverImageBytes: Uint8Array,
   payload: Uint8Array
 ): Promise<Uint8Array> {
-  const bitmap = await createImageBitmap(new Blob([coverImageBytes]));
+  const bitmap = await createImageBitmap(new Blob([coverImageBytes as BlobPart]));
   const { width, height } = bitmap;
 
   const canvas = new OffscreenCanvas(width, height);
@@ -69,7 +69,7 @@ export async function embedInPng(
 export async function extractFromPng(
   stegoImageBytes: Uint8Array
 ): Promise<Uint8Array> {
-  const bitmap = await createImageBitmap(new Blob([stegoImageBytes]));
+  const bitmap = await createImageBitmap(new Blob([stegoImageBytes as BlobPart]));
   const { width, height } = bitmap;
 
   const canvas = new OffscreenCanvas(width, height);
